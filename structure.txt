@@ -1,0 +1,14 @@
+.
+├── Pipfile
+├── Pipfile.lock
+├── README.md
+├── learn.json
+├── preview.png
+├── src
+│   ├── app.py
+│   ├── datastructures.py
+│   ├── test_solution.py
+│   └── utils.py
+└── structure.txt
+
+2 directories, 10 files

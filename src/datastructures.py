@@ -32,12 +32,20 @@ class FamilyStructure:
         return generated_id
 
     def add_member(self, member):
-        member["id"] = self._generate_id()
+        for existing_member in self._members:
+            if existing_member["first_name"] == member["first_name"]:
+                return None
+        
+        member["id"] = self._generate_id() if "id" not in member else member["id"]
         member["last_name"] = self.last_name
         self._members.append(member)
+        return member
 
     def delete_member(self, id):
-        self._members = [member for member in self._members if member["id"] != id]
+        for i, member in enumerate(self._members):
+            if member["id"] == id:
+                return self._members.pop(i)
+        return None
 
     def get_member(self, id):
         for member in self._members:
@@ -47,4 +55,3 @@ class FamilyStructure:
 
     def get_all_members(self):
         return self._members
-

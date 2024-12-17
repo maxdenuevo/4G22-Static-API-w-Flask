@@ -4,7 +4,6 @@ from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from datastructures import FamilyStructure
 
-
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 CORS(app)
@@ -24,41 +23,38 @@ def get_all_members():
     members = jackson_family.get_all_members()
     return jsonify(members), 200
 
-@app.route('/add_member', methods=['POST'])
-def add_member():
-    new_member = request.json
-    member = jackson_family.add_member(new_member)
-    if member is not None:
-        members = jackson_family.get_all_members()
-        response = {
-            "new_added": member,
-            "family": members
-        }
-        return jsonify(response), 200
-    else:
-        response = {
-            "response": f"El miembro con el nombre {new_member['first_name']} ya existe",
-        }
-        return jsonify(response), 400
+@app.route('/member/<int:member_id>', methods=['GET'])
+def get_member(member_id):
+    member = jackson_family.get_member(member_id)
+    if member is None:
+        return jsonify({"message": f"Member with id {member_id} not found"}), 400
+    return jsonify(member), 200
 
-@app.route('/delete_member/<int:member_id>', methods=['DELETE'])
+@app.route('/member', methods=['POST'])
+def add_member():
+    if not request.json:
+        return jsonify({"message": "Invalid request body"}), 400
+    
+    new_member = request.json
+    required_fields = ['first_name', 'age', 'lucky_numbers']
+    
+    if not all(field in new_member for field in required_fields):
+        return jsonify({"message": "Missing required fields"}), 400
+        
+    member = jackson_family.add_member(new_member)
+    if member is None:
+        return jsonify({"message": f"Member with name {new_member['first_name']} already exists"}), 400
+    
+    return jsonify(member), 200
+
+@app.route('/member/<int:member_id>', methods=['DELETE'])
 def delete_member(member_id):
     member = jackson_family.delete_member(member_id)
     if member is None:
-        response = {
-            "response": f"El miembro con el id {member_id} no existe",
-        }
-        return jsonify(response), 404
-    else:
-        response = {
-            "done": True
-        }
-        return jsonify(response), 200   
+        return jsonify({"message": f"Member with id {member_id} not found"}), 400
     
-    
+    return jsonify({"done": True}), 200
 
-
-# this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=True)
